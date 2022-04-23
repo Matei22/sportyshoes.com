@@ -1,10 +1,10 @@
 package com.simplilearn.webservice.exception;
 
-public class UserNotFound extends RuntimeException{
+public class NotAdmin extends RuntimeException{
 
 	private static final long serialVersionUID = 1L;
 
-	public UserNotFound(String message){
+	public NotAdmin(String message){
 		super(message);
 	}
 }

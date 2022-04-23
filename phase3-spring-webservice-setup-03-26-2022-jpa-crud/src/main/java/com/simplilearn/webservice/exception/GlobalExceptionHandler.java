@@ -17,10 +17,18 @@ public class GlobalExceptionHandler {
 		response = new ExceptionResponse(exception.getMessage(), HttpStatus.NOT_FOUND.name(), new Date(), exception.getClass().getSimpleName());
 		return new ResponseEntity<ExceptionResponse>(response,HttpStatus.NOT_FOUND);
 	}
+	
+	
 	@ExceptionHandler(value=UserNotFound.class)
 	public ResponseEntity<ExceptionResponse> UserNotFountException(UserNotFound exception) {
 		response = new ExceptionResponse(exception.getMessage(), HttpStatus.NOT_FOUND.name(), new Date(), exception.getClass().getSimpleName());
 		return new ResponseEntity<ExceptionResponse>(response,HttpStatus.NOT_FOUND);
+	}
+	
+	@ExceptionHandler(value=AdminNotFound.class)
+	public ResponseEntity<ExceptionResponse> adminNotFound(AdminNotFound exception) {
+		response = new ExceptionResponse(exception.getMessage(), HttpStatus.BAD_REQUEST.name(), new Date(), exception.getClass().getSimpleName());
+		return new ResponseEntity<ExceptionResponse>(response,HttpStatus.BAD_REQUEST);
 	}
 	
 	@ExceptionHandler(value=ProductAlreadyExist.class)
@@ -34,6 +42,19 @@ public class GlobalExceptionHandler {
 		response = new ExceptionResponse(exception.getMessage(), HttpStatus.BAD_REQUEST.name(), new Date(), exception.getClass().getSimpleName());
 		return new ResponseEntity<ExceptionResponse>(response,HttpStatus.BAD_REQUEST);
 	}
+	
+	@ExceptionHandler(value=NotAdmin.class)
+	public ResponseEntity<ExceptionResponse> notAdminException(NotAdmin exception) {
+		response = new ExceptionResponse(exception.getMessage(), HttpStatus.BAD_REQUEST.name(), new Date(), exception.getClass().getSimpleName());
+		return new ResponseEntity<ExceptionResponse>(response,HttpStatus.BAD_REQUEST);
+	}
+	
+	@ExceptionHandler(value=UniqueAdminException.class)
+	public ResponseEntity<ExceptionResponse> uniqueAdminException(UniqueAdminException exception) {
+		response = new ExceptionResponse(exception.getMessage(), HttpStatus.BAD_REQUEST.name(), new Date(), exception.getClass().getSimpleName());
+		return new ResponseEntity<ExceptionResponse>(response,HttpStatus.BAD_REQUEST);
+	}
+	
 	
 	
 	@ExceptionHandler(value=InvalidProductException.class)

@@ -14,12 +14,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.simplilearn.webservice.entity.User;
-
-
+import com.simplilearn.webservice.entity.AdminUser;
 import com.simplilearn.webservice.entity.Product;
+import com.simplilearn.webservice.exception.AdminNotFound;
+import com.simplilearn.webservice.exception.NotAdmin;
 import com.simplilearn.webservice.exception.ProductAlreadyExist;
 import com.simplilearn.webservice.exception.ProductNotFound;
-
+import com.simplilearn.webservice.exception.UserNotFound;
+import com.simplilearn.webservice.repository.AdminUserRepository;
 import com.simplilearn.webservice.repository.ProductRepository;
 import com.simplilearn.webservice.repository.UserRepository;
 
@@ -31,6 +33,9 @@ public class ProductController {
 	
 	@Autowired
 	UserRepository userRepository;
+	
+	@Autowired
+	AdminUserRepository adminUserRepository;
 
 	// get one product by id
 	@GetMapping("/product/{id}")
@@ -83,33 +88,75 @@ public class ProductController {
 	}
 
 	// add product
-	@PostMapping("/products")
-	public Product addOne(@RequestBody Product product) {
+	@PostMapping("/{admin_email}/{admin_pass}/products")
+	public Product addOne(@RequestBody Product product,
+			@PathVariable(value = "admin_email") String admin_email,
+			@PathVariable(value = "admin_pass") String admin_pass){
 		List<Product> productList = productRepository.findAll();
+		List<AdminUser> admin = adminUserRepository.findAll();
+		if (admin.isEmpty()) {
+			throw new AdminNotFound("Admin is not found with id: " + admin_email + ". Please insert first an eligible admin");
+		}
 		for (Product pt : productList) {
 			if (pt.getId() == product.getId()) {
 				throw new ProductAlreadyExist("Product is already available with given id " + product.getId());
 			}
 		}
-		return productRepository.save(product);
-	}
-
-	// update product
-	@PutMapping("/products")
-	public Product updateOne(@RequestBody Product product) {
-		Optional<Product> data = productRepository.findById(product.getId());
-		if (!data.isPresent()) {
-			throw new ProductNotFound("Product is not found with given id " + product.getId());
+		if(!admin.get(0).getEmail().equals(admin_email) || !admin.get(0).getPass().equals(admin_pass)) {
+			throw new NotAdmin("The data of the admin isn't correct");
 		}
 		return productRepository.save(product);
 	}
 
+	// update product
+	@PutMapping("/{admin_email}/{admin_pass}/products")
+	public Product updateOne(@RequestBody Product product,
+			@PathVariable(value = "admin_email") String admin_email,
+			@PathVariable(value = "admin_pass") String admin_pass){
+		Optional<Product> data = productRepository.findById(product.getId());
+		List<AdminUser> admin = adminUserRepository.findAll();
+
+		if (admin.isEmpty()) {
+			throw new AdminNotFound("Admin is not found with id: " + admin_email + ". Please insert first an eligible admin");
+		}
+		else if (!data.isPresent()) {
+			throw new ProductNotFound("Product is not found with given id " + product.getId());
+		}
+		else if(!admin.get(0).getEmail().equals(admin_email) || !admin.get(0).getPass().equals(admin_pass)) {
+			throw new NotAdmin("The data of the admin isn't correct");
+		}
+		return productRepository.save(product);
+	}
+	
+	@PutMapping("/{admin_email}/{admin_pass}")
+	public AdminUser updateOne(@RequestBody AdminUser adminUser,
+			@PathVariable(value = "admin_email") String admin_email,
+			@PathVariable(value = "admin_pass") String admin_pass){
+		List<AdminUser> admin = adminUserRepository.findByEmail(admin_email);
+
+		if (admin.isEmpty()) {
+			throw new AdminNotFound("Admin is not found with id: " + admin_email + ". Please insert first an eligible admin");
+		}
+		else if(!admin.get(0).getEmail().equals(admin_email) || !admin.get(0).getPass().equals(admin_pass)) {
+			throw new NotAdmin("The data of the admin isn't correct");
+		}
+		
+		return adminUserRepository.save(adminUser);
+	}
+
 	// delete product
-	@DeleteMapping("/products/{id}")
-	public String deleteOne(@PathVariable(value = "id") long id) {
+	@DeleteMapping("/{admin_email}/{admin_pass}/products/{id}")
+	public String deleteOne(@PathVariable(value = "id") long id,
+			@PathVariable(value = "admin_email") String admin_email,
+			@PathVariable(value = "admin_pass") String admin_pass){
 		Optional<Product> data = productRepository.findById(id);
+		List<AdminUser> admin = adminUserRepository.findAll();
+
 		if (!data.isPresent()) {
 			throw new ProductNotFound("Product is not found with given id " + id);
+		}
+		else if(!admin.get(0).getEmail().equals(admin_email) || !admin.get(0).getPass().equals(admin_pass)) {
+			throw new NotAdmin("The data of the admin isn't correct");
 		}
 		productRepository.deleteById(id);
 		return "Product is deleted successfully!";
@@ -120,6 +167,12 @@ public class ProductController {
 			@PathVariable(value = "userId") String userId,
 			@PathVariable(value = "productId") long productId
 			) {
+		if(!userRepository.findById(userId).isPresent()) {
+			throw new UserNotFound("User is not found with given id: " + userId);
+		}
+		if(!productRepository.findById(productId).isPresent()) {
+			throw new ProductNotFound("Product is not found with given id: " + productId);
+		}
 		Product product = productRepository.findById(productId).get();
 		User user = userRepository.findById(userId).get();
 		user.purchaseByUser(product);

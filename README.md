@@ -1,4 +1,5 @@
 Sporty Shoes is a company that manufactures and sells sports shoes.
+
 ● The Java concepts that I used in the project 
 1) Core Java concepts: variables, data types, operators, class, objects, access specifiers, and core keywords like final, this, and static.
 2) I used an application named Postman that can handle the requests (GET, PUT, POST and DELETE)
